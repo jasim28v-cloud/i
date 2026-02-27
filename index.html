@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>v2rayx | Infinity Cinematic Edition</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'neon-pink': '#fe2c55',
+                        'gold-glow': '#ffd700',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/css">
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Grain.png');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 5000;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fly-away {
+            to {
+                transform: translateY(-120px) translateX(20px) scale(1.6);
+                opacity: 0;
+            }
+        }
+
+        .animate-fly-away {
+            animation: fly-away 0.8s forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // --- Icons Helper ---
+        const Icon = ({ name, className }) => {
+            const [iconHtml, setIconHtml] = useState('');
+            useEffect(() => {
+                if (window.lucide) {
+                    const icon = window.lucide.icons[name];
+                    if (icon) {
+                        const svg = icon.toSvg({ class: className });
+                        setIconHtml(svg);
+                    }
+                }
+            }, [name, className]);
+            return <span dangerouslySetInnerHTML={{ __html: iconHtml }} />;
+        };
+
+        // --- Video Item Component ---
+        const VideoItem = ({ data, isActive, isMuted, toggleMute }) => {
+            const videoRef = useRef(null);
+            const [progress, setProgress] = useState(0);
+            const [isLiked, setIsLiked] = useState(false);
+            const [likesCount, setLikesCount] = useState(data.likes);
+            const [liveViews, setLiveViews] = useState(data.initialViews);
+            const [comments, setComments] = useState([]);
+            const [heartParticles, setHeartParticles] = useState([]);
+
+            const commentPool = ["Masterpiece! 💎", "v2rayx is stunning! 🔥", "That glass UI... wow ✨", "Ultra luxury vibe ❤️", "Best cinematic feed ever 🚀", "I love v2rayx! 🌸", "Infinity feed is real ♾️", "Pure class. 🥂", "This UI is next level 🚀"];
+            const userPool = ["lux_collector", "cinema_pro", "vibe_master", "urban_explorer", "neon_dreamer", "velvet_sky", "chrome_heart"];
+
+            useEffect(() => {
+                if (videoRef.current) {
+                    if (isActive) videoRef.current.play().catch(() => {});
+                    else { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+                }
+            }, [isActive]);
+
+            useEffect(() => {
+                if (!isActive) return;
+                const vInterval = setInterval(() => setLiveViews(prev => prev + Math.floor(Math.random() * 5)), 3000);
+                const cInterval = setInterval(() => {
+                    const newComment = { id: Math.random().toString(36).substr(2, 9), user: userPool[Math.floor(Math.random() * userPool.length)], text: commentPool[Math.floor(Math.random() * commentPool.length)] };
+                    setComments(prev => [...prev.slice(-4), newComment]);
+                }, 2000);
+                return () => { clearInterval(vInterval); clearInterval(cInterval); };
+            }, [isActive]);
+
+            const handleLike = (e) => {
+                e.stopPropagation();
+                const wasLiked = isLiked;
+                setIsLiked(!wasLiked);
+                setLikesCount(prev => (wasLiked ? (parseFloat(prev) - 0.1).toFixed(1) : (parseFloat(prev) + 0.1).toFixed(1)) + "K");
+                const newParticles = Array.from({ length: 10 }).map((_, i) => ({ id: Date.now() + i, x: Math.random() * 80 - 40 }));
+                setHeartParticles(prev => [...prev, ...newParticles]);
+                setTimeout(() => setHeartParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id))), 800);
+            };
+
+            return (
+                <div className="relative h-screen w-full snap-start flex justify-center items-center bg-black overflow-hidden">
+                    <div className="absolute top-[110px] left-5 bg-gradient-to-r from-[#fe2c55] to-[#ff85a1] px-4 py-1.5 rounded-full font-black text-[0.75rem] z-20 animate-pulse shadow-[0_0_30px_rgba(254,44,85,0.7)] flex items-center">
+                        <Icon name="TrendingUp" className="w-3 h-3 mr-1" /> VIRAL #{data.id}
+                    </div>
+
+                    <div className="relative h-full w-full max-w-[480px] overflow-hidden rounded-[40px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+                        <video ref={videoRef} src={`https://res.cloudinary.com/dssk5tabb/video/upload/q_auto,f_auto/${data.videoId}.mp4`} loop playsInline muted={isMuted} onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)} className="h-full w-full object-cover cursor-pointer" onClick={() => videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause()} />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70 pointer-events-none" />
+                    </div>
+
+                    <div className="absolute left-5 bottom-[240px] w-[300px] h-[200px] overflow-hidden pointer-events-none z-20">
+                        <AnimatePresence>
+                            {comments.map((c) => (
+                                <motion.div key={c.id} initial={{ x: -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ y: -60, opacity: 0 }} className="bg-white/10 backdrop-blur-xl px-5 py-2.5 rounded-[24px] mb-3 text-[0.9rem] border border-white/10 shadow-2xl">
+                                    <span className="font-black text-[#fe2c55] mr-2">@{c.user}</span>
+                                    <span className="text-white/90 font-medium">{c.text}</span>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="absolute right-6 bottom-[140px] flex flex-col gap-8 z-20">
+                        <div className="flex flex-col items-center">
+                            <button onClick={handleLike} className={`w-[68px] h-[68px] rounded-full flex items-center justify-center backdrop-blur-3xl border transition-all duration-500 relative ${isLiked ? 'bg-[#fe2c55] border-white shadow-[0_0_40px_rgba(254,44,85,1)] scale-110' : 'bg-white/5 border-white/20 hover:bg-[#fe2c55]/30'}`}>
+                                <Icon name="Heart" className={`w-8 h-8 ${isLiked ? 'fill-white text-white' : 'text-white'}`} />
+                                {heartParticles.map(p => <span key={p.id} className="absolute text-[#fe2c55] animate-fly-away text-2xl" style={{ left: `${p.x}px` }}>❤️</span>)}
+                            </button>
+                            <span className="text-[0.9rem] mt-2 font-black">{likesCount}</span>
+                        </div>
+                        <div className="flex flex-col items-center"><div className="w-[68px] h-[68px] bg-white/5 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-3xl"><Icon name="MessageCircle" className="w-8 h-8 text-white" /></div><span className="text-[0.9rem] mt-2 font-black">{data.commentsCount}</span></div>
+                        <div className="flex flex-col items-center"><button onClick={() => navigator.clipboard.writeText(window.location.href) && alert('Copied!')} className="w-[68px] h-[68px] bg-white/5 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-3xl"><Icon name="Share2" className="w-8 h-8 text-white" /></button><span className="text-[0.9rem] mt-2 font-black">Share</span></div>
+                        <button onClick={toggleMute} className="w-[68px] h-[68px] bg-white/5 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-3xl">{isMuted ? <Icon name="VolumeX" className="w-8 h-8 text-white" /> : <Icon name="Volume2" className="w-8 h-8 text-white" />}</button>
+                    </div>
+
+                    <div className="absolute bottom-14 left-10 z-20 pointer-events-none">
+                        <div className="bg-[#fe2c55]/30 px-5 py-2 rounded-full text-[0.9rem] border border-[#fe2c55]/50 inline-flex items-center gap-2 mb-5 backdrop-blur-xl">
+                            <Icon name="Eye" className="w-5 h-5 text-[#fe2c55]" /> <span className="font-black">{(liveViews / 1000).toFixed(1)}K</span> views
+                        </div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-white text-[2rem] font-black tracking-tighter">v2rayx_official</h3>
+                            <Icon name="CheckCircle2" className="w-7 h-7 text-blue-400" />
+                        </div>
+                        <p className="text-white/90 text-[1.1rem] max-w-[360px] font-medium">{data.description}</p>
+                        <div className="mt-5 flex items-center gap-3 text-[#fe2c55] font-black text-sm tracking-widest uppercase">
+                            <span className="w-2 h-2 bg-[#fe2c55] rounded-full animate-ping" /> INFINITY FEED ACTIVE
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-0 w-full h-2.5 bg-white/5 z-30">
+                        <div className={`h-full transition-all duration-200 ${progress > 95 ? 'bg-[#ffd700] shadow-[0_0_40px_#ffd700]' : 'bg-[#fe2c55] shadow-[0_0_25px_#fe2c55]'}`} style={{ width: `${progress}%` }} />
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            const [time, setTime] = useState(new Date().toLocaleTimeString());
+            const [activeIdx, setActiveIdx] = useState(0);
+            const [isMuted, setIsMuted] = useState(true);
+
+            useEffect(() => {
+                const t = setInterval(() => setTime(new Date().toLocaleTimeString()), 1000);
+                return () => clearInterval(t);
+            }, []);
+
+            const videoData = useMemo(() => Array.from({ length: 999 }).map((_, i) => ({
+                id: i + 1,
+                videoId: `${((i + 1) % 10).toString().padStart(2, '0')}_Itzbic`,
+                initialViews: Math.floor(Math.random() * 850000) + 100000,
+                likes: (Math.floor(Math.random() * 120) + 20) + ".5",
+                commentsCount: Math.floor(Math.random() * 800),
+                description: `Infinity Cinematic ID: ${((i + 1) % 10).toString().padStart(2, '0')}_Itzbic | Join the 999-video luxury journey. #v2rayx #infinity #cinematic`
+            })), []);
+
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(e => { if (e.isIntersecting) setActiveIdx(parseInt(e.target.dataset.index)); });
+                }, { threshold: 0.6 });
+                document.querySelectorAll('.video-item-container').forEach(el => observer.observe(el));
+                return () => observer.disconnect();
+            }, []);
+
+            return (
+                <div className="relative h-screen w-full bg-black font-sans overflow-hidden">
+                    <div className="grain-overlay" />
+                    <header className="fixed top-0 w-full h-[110px] flex items-center justify-between px-14 z-[3000] bg-black/50 backdrop-blur-[40px] border-b border-white/5">
+                        <div className="flex flex-col">
+                            <div className="text-[3.2rem] font-black text-white tracking-[-4px] leading-none drop-shadow-[0_0_30px_#fe2c55]">v2rayx</div>
+                            <div className="text-[1.2rem] text-[#fe2c55] font-bold tracking-[4px] mt-2">{time}</div>
+                        </div>
+                        <div className="flex items-center gap-8">
+                            <div className="hidden lg:flex flex-col items-end">
+                                <span className="text-[0.7rem] text-white/30 uppercase tracking-[3px] font-black">Infinity Network</span>
+                                <span className="text-emerald-400 text-sm font-black flex items-center gap-2"><span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" /> 999 NODES ACTIVE</span>
+                            </div>
+                            <div className="text-[#ffd700] font-black text-[0.9rem] tracking-[5px] border-2 border-[#ffd700] px-7 py-3 rounded-[16px] uppercase bg-[#ffd700]/5 shadow-[0_0_30px_rgba(255,215,0,0.3)]">CINEMATIC ULTRA</div>
+                        </div>
+                    </header>
+
+                    <main className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+                        {videoData.map((v, i) => (
+                            <div key={v.id} data-index={i} className="video-item-container h-screen snap-start">
+                                <VideoItem data={v} isActive={activeIdx === i} isMuted={isMuted} toggleMute={() => setIsMuted(!isMuted)} />
+                            </div>
+                        ))}
+                    </main>
+                    <div className="fixed bottom-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#fe2c55]/30 to-transparent z-[3000]" />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
