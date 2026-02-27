@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>v2rayx | Luxury Cinematic Feed</title>
+    <title>v2rayx | Official Luxury Feed</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-pink: #fe2c55;
             --gold: #ffd700;
+            --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(254, 44, 85, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; font-family: 'Poppins', sans-serif; color: #fff; overflow: hidden; }
+
+        body {
+            background-color: #000;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
 
         /* Cinematic Film Grain Overlay */
-        .film-grain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Grain.png'); opacity: 0.04; pointer-events: none; z-index: 5000; }
+        .film-grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Grain.png');
+            opacity: 0.04; pointer-events: none; z-index: 5000;
+        }
 
-        /* Glass Header */
+        /* Luxury Glass Header */
         header {
             position: fixed; top: 0; width: 100%; height: 90px;
             display: flex; align-items: center; justify-content: space-between;
@@ -27,26 +38,53 @@
             border-bottom: 1px solid var(--glass-border);
         }
 
+        .logo-area { display: flex; flex-direction: column; }
         .logo { font-size: 2.6rem; font-weight: 900; text-shadow: 0 0 20px var(--neon-pink); letter-spacing: -2px; }
         #digital-clock { font-size: 1.1rem; color: var(--neon-pink); font-weight: 300; letter-spacing: 2px; }
 
-        /* Video Feed System */
+        /* Massive Scroll Feed */
         .video-feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .video-box { position: relative; height: 100vh; width: 100%; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; background: #000; }
         
-        video { height: 100%; width: 100%; max-width: 480px; object-fit: cover; border-radius: 30px; border: 1px solid var(--glass-border); box-shadow: 0 0 50px rgba(0,0,0,1); }
+        video { height: 100%; width: 100%; max-width: 480px; object-fit: cover; border-radius: 30px; border: 1px solid var(--glass-border); }
 
-        /* UI Elements */
-        .trending-badge { position: absolute; top: 110px; left: 20px; background: linear-gradient(45deg, var(--neon-pink), #ff85a1); padding: 6px 18px; border-radius: 25px; font-weight: 800; font-size: 0.75rem; animation: pulse 1.5s infinite; z-index: 1000; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
+        /* Floating Trending Badge */
+        .trending-badge {
+            position: absolute; top: 110px; left: 20px;
+            background: linear-gradient(45deg, var(--neon-pink), #ff85a1);
+            padding: 6px 18px; border-radius: 25px; font-weight: 800; font-size: 0.75rem;
+            animation: glow 1.5s infinite; z-index: 1000;
+        }
 
+        @keyframes glow { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 20px var(--neon-pink); } }
+
+        /* Live Floating Comments */
+        .comment-stream {
+            position: absolute; left: 20px; bottom: 180px; width: 260px;
+            height: 160px; overflow: hidden; pointer-events: none; z-index: 1000;
+        }
+        .msg {
+            background: rgba(255,255,255,0.12); backdrop-filter: blur(8px);
+            padding: 6px 14px; border-radius: 18px; margin-bottom: 10px;
+            font-size: 0.85rem; border-left: 3px solid var(--neon-pink);
+            animation: slide-up 4s forwards; position: absolute; bottom: -50px;
+        }
+        @keyframes slide-up { to { bottom: 250px; opacity: 0; } }
+
+        /* Sidebar Actions */
         .sidebar { position: absolute; right: 20px; bottom: 130px; display: flex; flex-direction: column; gap: 28px; z-index: 1000; }
-        .btn-circle { width: 62px; height: 62px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
-        .btn-circle:hover { background: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); }
+        .btn-action { width: 62px; height: 62px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(15px); font-size: 1.5rem; cursor: pointer; transition: 0.3s; position: relative; }
+        .btn-action:hover { background: var(--neon-pink); box-shadow: 0 0 25px var(--neon-pink); }
 
+        /* Heart Sparks */
+        .heart { position: absolute; color: var(--neon-pink); pointer-events: none; animation: fly 0.8s forwards; }
+        @keyframes fly { to { transform: translateY(-120px) scale(1.6); opacity: 0; } }
+
+        /* Video Info */
         .video-meta { position: absolute; bottom: 50px; left: 25px; z-index: 1000; }
-        .views-tag { background: rgba(254, 44, 85, 0.3); padding: 5px 15px; border-radius: 25px; font-size: 0.8rem; border: 1px solid var(--neon-pink); display: inline-block; margin-bottom: 12px; }
+        .badge { background: rgba(254, 44, 85, 0.3); padding: 5px 15px; border-radius: 25px; font-size: 0.8rem; border: 1px solid var(--neon-pink); display: inline-block; margin-bottom: 12px; }
 
+        /* Bottom Progress */
         .progress-line { position: absolute; bottom: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.1); }
         .fill { height: 100%; width: 0%; background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); }
 
@@ -56,62 +94,92 @@
 <body>
 
     <div class="film-grain"></div>
+
     <header>
-        <div><div class="logo">v2rayx</div><div id="digital-clock">00:00:00</div></div>
-        <div style="color:var(--gold); font-weight:900; font-size:0.75rem; border:1px solid var(--gold); padding:5px 12px; border-radius:10px;">ULTRA LUXURY</div>
+        <div class="logo-area">
+            <div class="logo">v2rayx</div>
+            <div id="digital-clock">00:00:00</div>
+        </div>
+        <div style="color: var(--gold); font-weight: 900; font-size: 0.75rem; border: 1px solid var(--gold); padding: 5px 12px; border-radius: 10px;">CINEMATIC PRO</div>
     </header>
 
     <div class="video-feed" id="mainFeed"></div>
 
     <script>
-        // 1. Clock Logic
-        setInterval(() => { document.getElementById('digital-clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+        // Update Live Clock
+        function updateClock() { document.getElementById('digital-clock').textContent = new Date().toLocaleTimeString(); }
+        setInterval(updateClock, 1000); updateClock();
 
         const feed = document.getElementById('mainFeed');
         const cloudName = 'dssk5tabb';
+        const folder = 'Porn1'; 
+        const comments = ["Amazing! 🔥", "v2rayx is the best 🚀", "Stunning UI ✨", "Ultra luxury! ❤️", "Love this! 🌸"];
 
-        // 2. Automated Generation for 999 Videos
+        // 999 Video Generation
         for (let i = 1; i <= 999; i++) {
             let num = i.toString().padStart(2, '0');
-            const videoId = `${num}_Itzbic`; // التنسيق الذي سميت به ملفاتك
-            
-            // الرابط المباشر للملف - تم تعديله لضمان التشغيل
-            const videoSource = `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/${videoId}.mp4`;
+            const videoId = `${num}_Itzbic`; 
+            const views = (Math.floor(Math.random() * 850) + 50) + "K";
+            const likes = (Math.floor(Math.random() * 120) + 10) + "K";
+
+            const videoSource = `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/${folder}/${videoId}.mp4`;
 
             const item = document.createElement('div');
             item.className = 'video-box';
             item.innerHTML = `
                 <div class="trending-badge">🔥 VIRAL #${i}</div>
-                <video src="${videoSource}" loop playsinline preload="auto"></video>
+                <video src="${videoSource}" loop playsinline preload="metadata"></video>
+                <div class="comment-stream"></div>
                 <div class="sidebar">
-                    <div class="btn-circle">❤️</div>
-                    <div class="btn-circle">💬</div>
-                    <div class="btn-circle" onclick="navigator.share({url:window.location.href})">🔗</div>
+                    <div class="btn-action" onclick="spawnHearts(this)">❤️</div>
+                    <div class="btn-action">💬</div>
+                    <div class="btn-action" onclick="navigator.share({url:window.location.href})">🔗</div>
                 </div>
                 <div class="video-meta">
-                    <div class="views-tag">👁️ ${(Math.random()*900+50).toFixed(1)}K views</div>
-                    <h3 style="color:var(--neon-pink); font-size:1.7rem">@v2rayx_official</h3>
-                    <p>Exclusive Content: ${videoId}</p>
+                    <div class="badge">👁️ ${views} views</div>
+                    <h3 style="color:var(--neon-pink); font-size:1.7rem; font-weight:900;">@v2rayx_official</h3>
+                    <p style="opacity:0.8; font-size:0.9rem;">Content ID: ${videoId}</p>
                 </div>
                 <div class="progress-line"><div class="fill"></div></div>
             `;
             
             const v = item.querySelector('video');
             const fill = item.querySelector('.fill');
+
+            // Floating Comments
+            setInterval(() => {
+                if(item.dataset.active === "true") {
+                    const c = document.createElement('div');
+                    c.className = 'msg';
+                    c.textContent = comments[Math.floor(Math.random()*comments.length)];
+                    item.querySelector('.comment-stream').appendChild(c);
+                    setTimeout(() => c.remove(), 4000);
+                }
+            }, 2500);
+
             v.ontimeupdate = () => { fill.style.width = (v.currentTime / v.duration) * 100 + "%"; };
             item.onclick = (e) => { if(e.target.tagName !== 'DIV') v.paused ? v.play() : v.pause(); };
             feed.appendChild(item);
         }
 
-        // 3. Optimized Play/Pause Observer
+        function spawnHearts(btn) {
+            for(let i=0; i<5; i++) {
+                const h = document.createElement('div');
+                h.className = 'heart'; h.textContent = '❤️';
+                h.style.left = (Math.random() * 40 - 20) + "px";
+                btn.appendChild(h);
+                setTimeout(() => h.remove(), 800);
+            }
+        }
+
+        // Performance Observer
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const video = entry.target.querySelector('video');
+                const v = entry.target.querySelector('video');
                 if (entry.isIntersecting) {
-                    video.play().catch(() => {}); 
+                    v.play().catch(()=>{}); entry.target.dataset.active = "true";
                 } else {
-                    video.pause();
-                    video.currentTime = 0;
+                    v.pause(); v.currentTime = 0; entry.target.dataset.active = "false";
                 }
             });
         }, { threshold: 0.7 });
