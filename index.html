@@ -8,34 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body, html { 
-            margin: 0; padding: 0; height: 100%; overflow: hidden; 
-            background: #050003; font-family: 'Syncopate', sans-serif; color: white; 
-        }
-        /* TikTok Style Snap Container */
-        .snap-container { 
-            height: 100vh; scroll-snap-type: y mandatory; 
-            overflow-y: scroll; scrollbar-width: none; scroll-behavior: smooth; 
-        }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #050003; font-family: 'Syncopate', sans-serif; color: white; }
+        .snap-container { height: 100vh; scroll-snap-type: y mandatory; overflow-y: scroll; scrollbar-width: none; scroll-behavior: smooth; }
         .snap-container::-webkit-scrollbar { display: none; }
-        
-        .video-section { 
-            height: 100vh; scroll-snap-align: start; 
-            position: relative; display: flex; align-items: center; justify-content: center; 
-            background: black; border-bottom: 1px solid rgba(255, 0, 150, 0.1);
-        }
-
-        /* Glassmorphism Effect */
-        .glass-panel { 
-            background: rgba(255, 0, 150, 0.05); 
-            backdrop-filter: blur(25px) saturate(180%); 
-            border: 1px solid rgba(255, 0, 150, 0.2); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); 
-        }
-        
+        .video-section { height: 100vh; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: black; }
+        .glass-panel { background: rgba(255, 0, 150, 0.05); backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255, 0, 150, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); }
         .pink-glow { text-shadow: 0 0 15px #ff0096, 0 0 30px #ff0096; }
-        .video-bg { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7); }
-        
+        .video-bg { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .status-pulse { animation: pulse 2s infinite; }
     </style>
@@ -44,63 +23,46 @@
 
     <nav class="fixed top-6 left-6 right-6 z-[100] glass-panel rounded-2xl p-5 flex justify-between items-center px-10">
         <div class="flex flex-col">
-            <span class="text-pink-500 font-black text-2xl tracking-[0.3em] pink-glow">VΞNÜS</span>
-            <span class="text-[8px] text-pink-300/40 tracking-[0.5em]">DIGITAL_STREAM_VAULT</span>
+            <span class="text-pink-500 font-black text-2xl tracking-[0.3em] pink-glow uppercase">VΞNÜS</span>
+            <span class="text-[8px] text-pink-300/40 tracking-[0.5em]">CLOUD_SYNC: DSSK5TABB</span>
         </div>
-        <div id="counter" class="hidden md:flex items-center gap-4 glass-panel px-4 py-2 rounded-full border-pink-500/20">
+        <div class="flex items-center gap-4 glass-panel px-4 py-2 rounded-full border-pink-500/20">
             <div class="w-2 h-2 bg-green-500 rounded-full status-pulse"></div>
-            <span class="text-[10px] font-mono text-pink-100" id="video-count">SYNCING...</span>
+            <span class="text-[10px] font-mono text-pink-100" id="video-count">CONNECTING...</span>
         </div>
     </nav>
 
     <div id="toast" class="fixed top-32 left-1/2 -translate-x-1/2 glass-panel px-10 py-4 rounded-full text-pink-300 font-bold opacity-0 transition-all duration-500 z-[200] border-pink-500/50 pointer-events-none">
-        ENCRYPTED LINK COPIED 🔗
+        LINK COPIED 🔗
     </div>
 
     <div id="main-feed" class="snap-container">
-        <div class="h-screen flex items-center justify-center text-pink-500 animate-pulse">
-            INITIALIZING CORE...
-        </div>
+        <div class="h-screen flex items-center justify-center text-pink-500 animate-pulse">SYNCHRONIZING VOID...</div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const CLOUD_NAME = 'dssk5tabb';
-        const FOLDER_NAME = 'porn1';
-        const PATTERN = '_Itzbic';
+        // إعدادات Cloudinary الخاصة بك من الرابط
+        const cloudName = 'dssk5tabb';
+        const folderName = 'porn1';
+        const collectionId = '9684298eb3619a60cd7abc8b1dbbcbfe';
 
-        // --- FETCH & RENDER ENGINE ---
-        async function initVenus() {
-            try {
-                // Fetching from Cloudinary API (List via Resource Type)
-                const response = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/video/list/${FOLDER_NAME}.json`);
-                // Note: If the .json list is disabled in your Cloudinary, we'll use a specific tag or manual array.
-                // For this example, we'll assume the list is active or you can manually list IDs.
-                
-                // Let's use the manual range you specified 01-88 for absolute stability
-                const videos = [];
-                for(let i=1; i<=88; i++) {
-                    const num = i.toString().padStart(2, '0');
-                    videos.push({
-                        id: `${num}${PATTERN}`,
-                        url: `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${FOLDER_NAME}/${num}${PATTERN}.mp4`,
-                        num: num
-                    });
-                }
-
-                renderVideos(videos);
-            } catch (err) {
-                console.error("Core Sync Failed", err);
-            }
-        }
-
-        function renderVideos(videos) {
+        async function loadVideos() {
             const feed = document.getElementById('main-feed');
-            document.getElementById('video-count').innerText = `${videos.length} NODES_ONLINE`;
-            feed.innerHTML = ''; // Clear loader
+            let videoHtml = '';
+
+            // نظام توليد الروابط الهرمي (01_Itzbic إلى 88_Itzbic)
+            const videos = [];
+            for (let i = 1; i <= 88; i++) {
+                const num = i.toString().padStart(2, '0');
+                const fileName = `${num}_Itzbic`;
+                videos.push({
+                    num: num,
+                    url: `https://res.cloudinary.com/${cloudName}/video/upload/${folderName}/${fileName}.mp4`
+                });
+            }
 
             videos.forEach(video => {
-                const section = `
+                videoHtml += `
                 <section class="video-section">
                     <video loop muted playsinline class="video-bg" onclick="this.paused ? this.play() : this.pause()">
                         <source src="${video.url}" type="video/mp4">
@@ -110,30 +72,31 @@
                         <div class="glass-panel w-16 h-16 rounded-2xl flex items-center justify-center border-pink-500/50">
                             <span class="text-xl font-bold pink-glow">#${video.num}</span>
                         </div>
-                        <button class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-75 transition-transform">
+                        <button class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-75 transition-all">
                             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
                         </button>
-                        <button onclick="copyToClipboard('${video.url}')" class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-75 transition-transform">
+                        <button onclick="copyToClipboard('${video.url}')" class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-75 transition-all">
                             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 9a3 3 0 100-2.684 3 3 0 000 2.684z"></path></svg>
                         </button>
                     </div>
 
                     <div class="absolute bottom-10 left-6 right-24 glass-panel p-6 rounded-3xl border-l-4 border-pink-600">
-                        <h2 class="text-2xl font-black italic tracking-wider pink-glow uppercase">SERIES_${video.num}</h2>
-                        <p class="text-[10px] text-pink-200/50 mt-2 font-mono tracking-widest uppercase">Protocol: VΞNÜS_VIBΞ // Status: Public</p>
+                        <h2 class="text-2xl font-black italic tracking-wider pink-glow uppercase">ITZBIC_VIBE_${video.num}</h2>
+                        <p class="text-[10px] text-pink-200/50 mt-2 font-mono tracking-widest uppercase italic">Public Stream // Encrypted Core</p>
                     </div>
                 </section>`;
-                feed.innerHTML += section;
             });
 
-            setupObserver();
+            feed.innerHTML = videoHtml;
+            document.getElementById('video-count').innerText = '88 NODES ACTIVE';
+            setupIntersectionObserver();
         }
 
-        function setupObserver() {
+        function setupIntersectionObserver() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if(entry.isIntersecting) {
-                        entry.target.play().catch(e => {});
+                    if (entry.isIntersecting) {
+                        entry.target.play().catch(() => {});
                     } else {
                         entry.target.pause();
                         entry.target.currentTime = 0;
@@ -151,7 +114,7 @@
             setTimeout(() => { t.style.opacity = '0'; }, 2000);
         }
 
-        window.onload = initVenus;
+        window.onload = loadVideos;
     </script>
 </body>
 </html>
